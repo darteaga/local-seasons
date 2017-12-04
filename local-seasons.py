@@ -1,5 +1,6 @@
 # Local seasons
-# Copyright (C) 2017 Daniel Arteaga
+# Copyright this implementation (C) 2017 Daniel Arteaga
+# Based on algorithm in http://us-climate.blogspot.com/ by Brian B
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,14 +19,20 @@ import numpy as np
 from scipy.interpolate import interp1d
 import datetime
 
-# Data from Barcelona, Can Bruixa
-# Extracted from Wikipedia
-monthly_temp_dict = {}
+# Values extracted from Wikipedia
+monthly_temp_dict = {'Barcelona': [11.7, 12.4, 14.2, 15.8, 19.3, 23.0, 25.7, 26.1, 23.0, 19.5, 14.9, 12.3],
+                     'Madrid': [6.45, 7.72, 11.0, 13.65, 17.22, 23.15, 25.78, 25.31, 21.03, 15.38, 9.50, 6.47],
+                     'Sevilla': [11.0, 12.5, 15.6, 17.3, 20.7, 25.1, 28.2, 27.9, 25.0, 20.2, 15.1, 11.9],
+                     'Bilbao': [9.3, 9.7, 11.5, 12.6, 15.7, 18.4, 20.4, 20.9, 19.2, 16.4, 12.4, 9.9],
+                     'Stockholm': [-1.6, -1.7, 1.2, 6.0, 11.7, 15.7, 18.8, 17.6, 12.7 , 7.7, 3.0, -0.3],
+                     }
 
-monthly_temp_dict['Barcelona'] = [11.7, 12.4, 14.2, 15.8, 19.3, 23.0, 25.7, 26.1, 23.0, 19.5, 14.9, 12.3]
 
-# madrid, parque del retiro
-monthly_temp_dict['Madrid'] = [6.45, 7.72, 11.0, 13.65, 17.22, 23.15, 25.78, 25.31, 21.03, 15.38, 9.50, 6.47]
+def to_date(day):
+    date_0 = datetime.datetime.strptime("01/01/17", "%d/%m/%y") # arbitrary non-leap year
+    date = date_0 + datetime.timedelta(days=day)
+    return date.strftime("%d %B")
+
 
 days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 accum_days_month = [sum(days_per_month[0:i]) + days_per_month[i]/2 - 1 
@@ -39,7 +46,6 @@ accum_days_month = ([x - 365 for x in accum_days_month]
 for location in monthly_temp_dict:
 
     monthly_temp = monthly_temp_dict[location]
-    
     monthly_temp = 3*monthly_temp # past and next years also
 
     interp_temp = interp1d(accum_days_month, monthly_temp, 'cubic')
@@ -52,14 +58,9 @@ for location in monthly_temp_dict:
 
     temp_diff = warmest_temp - coolest_temp
 
-    def to_date(day):
-        date_0 = datetime.datetime.strptime("01/01/17", "%d/%m/%y") # arbitrary non-leap year
-        date = date_0 + datetime.timedelta(days=day)
-        return date.strftime("%d %B")
-
     print('LOCATION: {}'.format(location))
-    print("Coolest day: {} ({:.1f} ºC)".format(to_date(coolest_day), coolest_temp))
-    print("Warmest day: {} ({:.1f} ºC)".format(to_date(warmest_day), warmest_temp))
+    print("Coolest day: {} ({:.1f} C)".format(to_date(coolest_day), coolest_temp))
+    print("Warmest day: {} ({:.1f} C)".format(to_date(warmest_day), warmest_temp))
 
     print("")
     print("Seasons - method 1")
